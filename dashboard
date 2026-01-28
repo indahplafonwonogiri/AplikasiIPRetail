@@ -1,0 +1,54 @@
+import streamlit as st
+import pandas as pd
+
+# Konfigurasi Halaman
+st.set_page_config(page_title="Dashboard Toko Plafon PVC", layout="wide")
+
+# --- DATA DUMMY (Contoh Data Toko) ---
+data_stok = {
+    'Produk': ['Plafon Putih Glossy', 'Motif Kayu Jati', 'Marmer Mewah', 'Minimalis Garis', 'Plafon Doff'],
+    'Stok (Box)': [45, 12, 30, 8, 25],
+    'Harga/m': [25000, 35000, 45000, 28000, 22000]
+}
+df = pd.DataFrame(data_stok)
+
+# --- SIDEBAR ---
+st.sidebar.title("Navigasi Toko")
+menu = st.sidebar.selectbox("Pilih Menu", ["Ringkasan Ringkas", "Input Penjualan", "Cek Stok"])
+
+# --- HEADER ---
+st.title("🏗️ Dashboard Toko Plafon PVC")
+st.markdown("Sistem monitoring stok dan penjualan harian.")
+st.divider()
+
+if menu == "Ringkasan Ringkas":
+    # --- METRICS ---
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Produk", "5 Jenis")
+    col2.metric("Omzet Hari Ini", "Rp 4.500.000", "+12%")
+    col3.metric("Stok Perlu Reorder", "2 Motif", delta_color="inverse")
+
+    # --- TABEL DAN GRAFIK ---
+    st.subheader("Stok Plafon Saat Ini")
+    st.bar_chart(df.set_index('Produk')['Stok (Box)'])
+    st.table(df)
+
+elif menu == "Input Penjualan":
+    st.subheader("📝 Input Transaksi Baru")
+    with st.form("form_penjualan"):
+        produk_terpilih = st.selectbox("Pilih Motif Plafon", df['Produk'])
+        jumlah = st.number_input("Jumlah (Meter/Box)", min_value=1)
+        tanggal = st.date_input("Tanggal Transaksi")
+        submit = st.form_submit_button("Simpan Transaksi")
+        
+        if submit:
+            st.success(f"Berhasil mencatat penjualan {produk_terpilih} sebanyak {jumlah}!")
+
+elif menu == "Cek Stok":
+    st.subheader("🔎 Detail Informasi Produk")
+    search = st.text_input("Cari Motif...")
+    hasil = df[df['Produk'].str.contains(search, case=False)]
+    st.dataframe(hasil, use_container_width=True)
+
+# --- FOOTER ---
+st.sidebar.info("Gunakan dashboard ini untuk memantau inventaris toko secara real-time.")
